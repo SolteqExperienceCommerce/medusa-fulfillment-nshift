@@ -1,0 +1,40 @@
+{
+  "name": "medusa-nshift-plugin",
+  "version": "0.1.0",
+  "description": "nShift Checkout fulfillment provider plugin for Medusa V2",
+  "author": "",
+  "license": "MIT",
+  "keywords": [
+    "medusa",
+    "medusa-plugin",
+    "medusa-fulfillment",
+    "nshift",
+    "shipping",
+    "fulfillment"
+  ],
+  "files": [
+    ".medusa",
+    "!.medusa/server/src/admin/**"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    "./providers/*": "./.medusa/server/src/providers/*/index.js",
+    "./*": "./.medusa/server/src/*.js"
+  },
+  "scripts": {
+    "build": "medusa plugin:build",
+    "prepare": "cross-env NODE_ENV=production yarn build",
+    "watch": "medusa plugin:build --watch"
+  },
+  "peerDependencies": {
+    "@medusajs/framework": ">=2.3.0",
+    "@medusajs/medusa": ">=2.3.0"
+  },
+  "devDependencies": {
+    "@medusajs/framework": "2.12.5",
+    "@medusajs/medusa": "2.12.5",
+    "@medusajs/cli": "2.12.5",
+    "cross-env": "^7.0.3",
+    "typescript": "^5.6.2"
+  }
+}

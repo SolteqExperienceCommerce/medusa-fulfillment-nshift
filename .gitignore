@@ -1,0 +1,6 @@
+node_modules/
+.medusa/
+dist/
+*.js
+*.d.ts
+*.js.map
