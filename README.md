@@ -15,9 +15,6 @@ Integrates [nShift Checkout API](https://developers.nshiftone.com/checkout/getti
 ## Installation
 
 ```bash
-# npm
-npm install medusa-nshift-plugin
-
 # yarn
 yarn add medusa-nshift-plugin
 
@@ -94,18 +91,14 @@ See the [nShift Checkout API documentation](https://developers.nshiftone.com/che
 
 ```bash
 # Install dependencies
-npm install
+yarn install
 
 # Build the plugin
-npm run build
+yarn medusa plugin:build
 
 # Watch mode
-npm run watch
+npm yarn medusa plugin:develop
 
 # Publish locally with yalc
 yalc publish
 ```
-
-## License
-
-MIT
