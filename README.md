@@ -40,13 +40,31 @@ yarn medusa plugin:add @solteq/medusa-nshift-plugin
 yarn install
 ```
 
+## Local development
+```bash
+# after changes made in this plugin, run: 
+yarn yalc publish
+
+# it'll build and publish the plugin locally, then in the Medusa project run (assuming plugin already installed and working): 
+yarn yalc update
+
+# to pull the fresh package from yalc
+yarn install 
+# ➤ YN0013: │ A package was added to the project (+ 79.21 KiB).
+
+# launch it
+yarn run dev
+
+# Nshift plugin is at its latest version
+```
+
 ## Configuration
 
 ### Environment Variables
 
 ```env
 NSHIFT_CLIENT_ID=your_client_id
-NSHIFT_CLIENT_SECRET=your_client_secret
+NSHIFT_CLIENT_SECRET=your_client_secret # ‼️⚠️ See providers/nshift/client.ts, hard code it for debug purposes ⚠️‼️
 NSHIFT_CONNECTION_ID=your_connection_id
 NSHIFT_LANGUAGE_CODE=en
 NSHIFT_LOCALE_ID=en-GB
