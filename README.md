@@ -103,22 +103,6 @@ module.exports = defineConfig({
 
 See the [nShift Checkout API documentation](https://developers.nshiftone.com/checkout/getting-started) for details.
 
-## Development
-
-```bash
-# Install dependencies
-yarn install
-
-# Build the plugin
-yarn medusa plugin:build
-
-# Watch mode
-npm yarn medusa plugin:develop
-
-# Publish locally with yalc
-yalc publish
-```
-
 ## What's included for now
 - Core Nshift functionality as a delivery method/fulfilment method
 - Communication between Medusa <> Nshift 
