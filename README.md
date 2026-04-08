@@ -102,3 +102,42 @@ npm yarn medusa plugin:develop
 # Publish locally with yalc
 yalc publish
 ```
+
+## What's included for now
+- Core Nshift functionality as a delivery method/fulfilment method
+- Communication between Medusa <> Nshift 
+- Automatic creation of shipment in the Nshift Portal
+- Full order cycle
+
+## Soft limitations
+Currently missing these features, however those are simple parameters passed when creating a partial shipment
+
+- Addons (dangerous goods etc)
+- Delivery date and time selection
+- Pickup points (agents)
+- Time slots
+- Return badges and certificates to frontend (mirror response from Nshift)
+
+**Example:**
+```json
+{
+  "orderId": "",
+  "sessionId": "",		
+  "optionId": "",		// Returned from fetching delivery options, can be passed
+  "pickupPointId": "", 	// Returned from fetching delivery options
+  "timeSlotId": "",		// Returned from fetching delivery options
+  [...],
+},
+  "addons": [
+    {
+      "addonId": "",
+      "fields": [
+        {
+          "fieldId": "MOBILE",
+          "value": ""
+        }
+      ]
+    }
+  ],
+}
+```
