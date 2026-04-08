@@ -137,11 +137,11 @@ See the [nShift Checkout API documentation](https://developers.nshiftone.com/che
 ## Soft limitations
 Currently missing these features, however those are simple parameters passed when creating a partial shipment
 
-- Addons (dangerous goods etc)
-- (??? need more research) Delivery date and time selection
+- Addons (dangerous goods etc) (already returned in {{base_url}}/store/nshift/delivery-options)
+- Delivery date and time selection (needs setup in Nshift portal)
 - ~~Pickup points (agents)~~
 - ~~Time slots~~
-- Return badges and certificates to frontend (mirror response from Nshift)
+- Return badges and certificates to frontend (already returned in {{base_url}}/store/nshift/delivery-options)
 
 **Example:**
 ```json
@@ -165,6 +165,73 @@ Currently missing these features, however those are simple parameters passed whe
     }
   ],
 }
+```
+
+**Addons example:**
+Response from POST {{base_url}}/store/nshift/delivery-options (custom endpoint)
+```json
+{
+    "session_id": "random-session-id-8293492i42397049qihfdjsdghfkusgf",
+    "options": [
+        {
+            "addons": [
+                {
+                    "addonId": "948058",
+                    "hidden": false,
+                    "mandatory": false,
+                    "originalPrice": 0,
+                    "preselected": false,
+                    "price": 79,
+                    "priceDescription": "79.00 €",
+                    "title": "Transport of Dangerous Goods"
+                }
+            ],
+            [...]
+```
+
+Example usage when creating partial shipment in Nshift: 
+```json
+{
+  "orderId": "",
+  "sessionId": "",
+  "optionId": "",
+  "pickupPointId": "{{already_implemented}}",
+  "timeSlotId": "",
+  "receiver": {
+    "name": "",
+    "address1": "",
+    [...]
+  },
+  "addons": [
+    {
+      "addonId": "{{addonId from above}}",
+      "fields": [
+        {
+          "fieldId": "{{enum(MOBILE, PHONE, EMAIL; DOOR_CODE, DELIVERY_INSTRUCTIONS, CONTACT_NAME)}}",
+          "value": "{{Custom fields that can be passed to Nshift}}"
+        }
+      ]
+    }
+  ],
+  [...]
+```
+
+Badges example (display on frontend, not returned back to Nshift): 
+```json
+    "session_id": "seeeesssioooooonid-23190abfdabafcaffbcaf",
+    "options": [
+        {
+            "badges": [
+                {
+                    "badgeId": "EXPRESS",
+                    "color": "black",
+                    "title": "Express delivery"
+                }
+            ],
+            "carrierId": "847",
+            "carrierProductId": "8081",
+            "carrierProductName": "DB Schenker Poland International – System (8081)",
+            [...]
 ```
 
 ## Frontend usage
