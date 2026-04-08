@@ -137,11 +137,11 @@ See the [nShift Checkout API documentation](https://developers.nshiftone.com/che
 ## Soft limitations
 Currently missing these features, however those are simple parameters passed when creating a partial shipment
 
-- Addons (dangerous goods etc) (already returned in {{base_url}}/store/nshift/delivery-options)
-- Delivery date and time selection (needs setup in Nshift portal)
+- Addons (dangerous goods etc) (already returned in {{base_url}}/store/nshift/delivery-options), see example below
+- Delivery date and time selection (needs setup in Nshift portal), not implemented yet
 - ~~Pickup points (agents)~~
 - ~~Time slots~~
-- Return badges and certificates to frontend (already returned in {{base_url}}/store/nshift/delivery-options)
+- ~~Return badges and certificates to frontend (already returned in {{base_url}}/store/nshift/deliv~~ery-options)
 
 **Example:**
 ```json
