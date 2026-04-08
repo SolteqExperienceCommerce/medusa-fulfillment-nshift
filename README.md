@@ -24,6 +24,9 @@ cd /path/to/medusa-nshift-plugin
 # if yalc is not installed:
 yarn add --dev yalc
 
+# if packages not installed, run (it will also build the plugin): 
+yarn install
+
 # if yalc works as it should, publish it locally:
 yarn yalc publish
 
