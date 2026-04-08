@@ -69,7 +69,7 @@ yarn run dev
 
 ```env
 NSHIFT_CLIENT_ID=your_client_id
-NSHIFT_CLIENT_SECRET=your_client_secret # ‼️⚠️ See providers/nshift/client.ts, hard code it for debug purposes ⚠️‼️
+NSHIFT_CLIENT_SECRET=your_client_secret # ‼️⚠️ Make sure to escape any $ with \$ ⚠️‼️
 NSHIFT_CONNECTION_ID=your_connection_id
 NSHIFT_LANGUAGE_CODE=en
 NSHIFT_LOCALE_ID=en-GB

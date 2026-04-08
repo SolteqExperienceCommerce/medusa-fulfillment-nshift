@@ -35,10 +35,6 @@ export class NShiftClient {
       return this.accessToken
     }
 
-    let nshiftClientSecret = (typeof this.options.client_secret === "undefined" || this.options.client_secret === null) 
-      ? '{{REPLACE_THIS_WITH_CLIENT_SECRET_AND_LEAVE_EMPTY_IN_.env_SINCE_ENV_VARIABLES_BREAK_BECAUSE_OF_$_AND_@_EVEN_THOUGH_IT_IS_ESCAPED 🤷‍♂️ lol, need to find a solution}}' 
-      : this.options.client_secret; 
-
     const response = await fetch(AUTH_URL, {
       method: "POST",
       headers: {
@@ -47,7 +43,7 @@ export class NShiftClient {
       },
       body: new URLSearchParams({
         client_id: this.options.client_id,
-        client_secret: nshiftClientSecret,
+        client_secret: this.options.client_secret,
         grant_type: "client_credentials",
       }).toString(),
     })
