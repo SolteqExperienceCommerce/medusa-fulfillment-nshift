@@ -1,4 +1,4 @@
-# medusa-nshift-plugin
+# @solteq/@solteq/medusa-nshift-plugin
 
 nShift Checkout fulfillment provider plugin for [Medusa V2](https://medusajs.com).
 
@@ -15,11 +15,24 @@ Integrates [nShift Checkout API](https://developers.nshiftone.com/checkout/getti
 ## Installation
 
 ```bash
-# yarn
-yarn add medusa-nshift-plugin
+# yarn (if published to npm):
+yarn add @solteq/medusa-nshift-plugin
 
-# local development with yalc
-yalc add medusa-nshift-plugin
+# local development with yalc:
+cd /path/to/medusa-nshift-plugin
+
+# if yalc is not installed:
+yarn add --dev yalc
+
+# if yalc works as it should, publish it locally:
+yarn yalc publish
+
+# go to main project:
+cd /path/to/your-medusa-project
+
+yarn medusa plugin:add @solteq/medusa-nshift-plugin
+
+yarn install
 ```
 
 ## Configuration
@@ -44,7 +57,7 @@ module.exports = defineConfig({
   // ...
   plugins: [
     {
-      resolve: "medusa-nshift-plugin",
+      resolve: "@solteq/medusa-nshift-plugin",
       options: {},
     },
   ],
@@ -58,7 +71,7 @@ module.exports = defineConfig({
             id: "manual",
           },
           {
-            resolve: "medusa-nshift-plugin/providers/nshift",
+            resolve: "@solteq/medusa-nshift-plugin/providers/nshift",
             id: "nshift",
             options: {
               client_id: process.env.NSHIFT_CLIENT_ID,

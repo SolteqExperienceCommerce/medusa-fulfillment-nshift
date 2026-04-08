@@ -1,8 +1,8 @@
 {
-  "name": "medusa-nshift-plugin",
+  "name": "@solteq/medusa-nshift-plugin",
   "version": "0.1.0",
   "description": "nShift Checkout fulfillment provider plugin for Medusa V2",
-  "author": "",
+  "author": "Solteq",
   "license": "MIT",
   "keywords": [
     "medusa",
@@ -31,10 +31,12 @@
     "@medusajs/medusa": ">=2.3.0"
   },
   "devDependencies": {
+    "@medusajs/cli": "2.12.5",
     "@medusajs/framework": "2.12.5",
     "@medusajs/medusa": "2.12.5",
-    "@medusajs/cli": "2.12.5",
     "cross-env": "^7.0.3",
-    "typescript": "^5.6.2"
-  }
+    "typescript": "^5.6.2",
+    "yalc": "^1.0.0-pre.53"
+  },
+  "dependencies": {}
 }
