@@ -45,10 +45,13 @@ yarn install
 # after changes made in this plugin, run: 
 yarn yalc publish
 
-# it'll build and publish the plugin locally, then in the Medusa project run (assuming plugin already installed and working): 
+# go to main project:
+cd /path/to/your-medusa-project
+
+# it'll build and publish the plugin locally, then in the main project run (assuming plugin already installed and working): 
 yarn yalc update
 
-# to pull the fresh package from yalc
+# to pull the fresh package from local repo
 yarn install 
 # ➤ YN0013: │ A package was added to the project (+ 79.21 KiB).
 
