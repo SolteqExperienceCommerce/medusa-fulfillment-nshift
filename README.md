@@ -11,6 +11,8 @@ Integrates [nShift Checkout API](https://developers.nshiftone.com/checkout/getti
 - **Partial shipments** — creates partial shipments in nShift when orders are fulfilled
 - **Cancellation support** — deletes partial shipments in nShift when fulfillments are cancelled
 - **OAuth2 token management** — automatically manages nShift API authentication with token caching
+- Pickup point selection
+- Time slot selection
 
 ## Installation
 
@@ -113,9 +115,9 @@ See the [nShift Checkout API documentation](https://developers.nshiftone.com/che
 Currently missing these features, however those are simple parameters passed when creating a partial shipment
 
 - Addons (dangerous goods etc)
-- Delivery date and time selection
-- Pickup points (agents)
-- Time slots
+- (??? need more research) Delivery date and time selection
+- ~~Pickup points (agents)~~
+- ~~Time slots~~
 - Return badges and certificates to frontend (mirror response from Nshift)
 
 **Example:**
@@ -123,9 +125,9 @@ Currently missing these features, however those are simple parameters passed whe
 {
   "orderId": "",
   "sessionId": "",		
-  "optionId": "",		// Returned from fetching delivery options, can be passed
-  "pickupPointId": "", 	// Returned from fetching delivery options
-  "timeSlotId": "",		// Returned from fetching delivery options
+  "optionId": "",		
+  "pickupPointId": "", 	
+  "timeSlotId": "",		
   [...],
 },
   "addons": [
@@ -140,4 +142,26 @@ Currently missing these features, however those are simple parameters passed whe
     }
   ],
 }
+```
+
+## Frontend usage
+```ts
+// 1. Customer enters address, fetch nShift options
+const { session_id, options } = await sdk.client.fetch(
+  "/store/nshift/delivery-options",
+  { method: "POST", body: { cart_id: cart.id } }
+)
+
+// 2. Render options[].pickupPoints[] and options[].deliveryTime from the response
+
+// 3. Customer selects, add shipping method
+await sdk.store.cart.addShippingMethod(cart.id, {
+  option_id: medusaShippingOptionId,
+  data: {
+    session_id,
+    option_id: selectedOption.optionId,
+    pickup_point_id: selectedPickupPoint?.pickupPointId,
+    time_slot_id: selectedTimeSlot?.timeSlotId,
+  },
+})
 ```

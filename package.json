@@ -17,6 +17,7 @@
     "!.medusa/server/src/admin/**"
   ],
   "exports": {
+    ".": "./.medusa/server/src/index.js",
     "./package.json": "./package.json",
     "./providers/*": "./.medusa/server/src/providers/*/index.js",
     "./*": "./.medusa/server/src/*.js"

@@ -1,0 +1,658 @@
+{
+  "info": {
+    "name": "Medusa nShift Plugin",
+    "description": "Complete collection for testing the @solteq/medusa-nshift-plugin.\n\nSetup:\n1. Set `base_url`, `publishable_api_key`, and `admin_email`/`admin_password` in collection variables\n2. Run \"Admin > Auth > Login\" first to get an admin token\n3. Follow the numbered flows in order\n\nStore checkout flow: Create Cart → Add Items → Set Address → Fetch nShift Options → Add Shipping Method → Complete Cart\nAdmin flow: List Providers → Create Shipping Option → Fulfill Order → Cancel Fulfillment",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:9000", "type": "string" },
+    { "key": "publishable_api_key", "value": "", "type": "string" },
+    { "key": "admin_email", "value": "admin@medusa-test.com", "type": "string" },
+    { "key": "admin_password", "value": "supersecret", "type": "string" },
+    { "key": "admin_token", "value": "", "type": "string" },
+    { "key": "cart_id", "value": "", "type": "string" },
+    { "key": "region_id", "value": "", "type": "string" },
+    { "key": "product_variant_id", "value": "", "type": "string" },
+    { "key": "sales_channel_id", "value": "", "type": "string" },
+    { "key": "nshift_session_id", "value": "", "type": "string" },
+    { "key": "nshift_option_id", "value": "", "type": "string" },
+    { "key": "nshift_pickup_point_id", "value": "", "type": "string" },
+    { "key": "shipping_option_id", "value": "", "type": "string" },
+    { "key": "payment_collection_id", "value": "", "type": "string" },
+    { "key": "order_id", "value": "", "type": "string" },
+    { "key": "fulfillment_id", "value": "", "type": "string" },
+    { "key": "stock_location_id", "value": "", "type": "string" },
+    { "key": "fulfillment_set_id", "value": "", "type": "string" },
+    { "key": "service_zone_id", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "1. Login (get admin token)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.token) {",
+                      "    pm.collectionVariables.set('admin_token', json.token);",
+                      "    console.log('Admin token saved');",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+                },
+                "url": "{{base_url}}/auth/user/emailpass"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Setup",
+          "item": [
+            {
+              "name": "2. List Regions",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.regions && json.regions.length > 0) {",
+                      "    pm.collectionVariables.set('region_id', json.regions[0].id);",
+                      "    console.log('Region ID saved:', json.regions[0].id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                ],
+                "url": "{{base_url}}/admin/regions"
+              }
+            },
+            {
+              "name": "3. List Products (get variant ID)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.products && json.products.length > 0) {",
+                      "    const product = json.products[0];",
+                      "    if (product.variants && product.variants.length > 0) {",
+                      "        pm.collectionVariables.set('product_variant_id', product.variants[0].id);",
+                      "        console.log('Variant ID saved:', product.variants[0].id);",
+                      "    }",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/products?fields=*variants",
+                  "host": ["{{base_url}}"],
+                  "path": ["admin", "products"],
+                  "query": [
+                    { "key": "fields", "value": "*variants" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "4. List Sales Channels",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.sales_channels && json.sales_channels.length > 0) {",
+                      "    pm.collectionVariables.set('sales_channel_id', json.sales_channels[0].id);",
+                      "    console.log('Sales channel ID saved:', json.sales_channels[0].id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                ],
+                "url": "{{base_url}}/admin/sales-channels"
+              }
+            },
+            {
+              "name": "5. List Stock Locations",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.stock_locations && json.stock_locations.length > 0) {",
+                      "    const loc = json.stock_locations[0];",
+                      "    pm.collectionVariables.set('stock_location_id', loc.id);",
+                      "    console.log('Stock location ID saved:', loc.id);",
+                      "    if (loc.fulfillment_sets && loc.fulfillment_sets.length > 0) {",
+                      "        pm.collectionVariables.set('fulfillment_set_id', loc.fulfillment_sets[0].id);",
+                      "        console.log('Fulfillment set ID saved:', loc.fulfillment_sets[0].id);",
+                      "        const zones = loc.fulfillment_sets[0].service_zones;",
+                      "        if (zones && zones.length > 0) {",
+                      "            pm.collectionVariables.set('service_zone_id', zones[0].id);",
+                      "            console.log('Service zone ID saved:', zones[0].id);",
+                      "        }",
+                      "    }",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/stock-locations?fields=*fulfillment_sets,*fulfillment_sets.service_zones",
+                  "host": ["{{base_url}}"],
+                  "path": ["admin", "stock-locations"],
+                  "query": [
+                    { "key": "fields", "value": "*fulfillment_sets,*fulfillment_sets.service_zones" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "6. List Fulfillment Providers",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "console.log('Fulfillment providers:', JSON.stringify(json.fulfillment_providers?.map(p => p.id)));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                ],
+                "url": "{{base_url}}/admin/fulfillment-providers"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Shipping Options",
+          "item": [
+            {
+              "name": "7. Create nShift Shipping Option",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.shipping_option) {",
+                      "    pm.collectionVariables.set('shipping_option_id', json.shipping_option.id);",
+                      "    console.log('Shipping option ID saved:', json.shipping_option.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"nShift Delivery\",\n  \"service_zone_id\": \"{{service_zone_id}}\",\n  \"shipping_profile_id\": null,\n  \"provider_id\": \"fp_nshift\",\n  \"type\": {\n    \"label\": \"nShift Delivery\",\n    \"description\": \"nShift Checkout delivery option\",\n    \"code\": \"nshift-delivery\"\n  },\n  \"price_type\": \"calculated\",\n  \"data\": {\n    \"option_id\": \"{{nshift_option_id}}\"\n  },\n  \"rules\": []\n}"
+                },
+                "url": "{{base_url}}/admin/shipping-options"
+              }
+            },
+            {
+              "name": "List Shipping Options",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/shipping-options?fields=*type,*rules",
+                  "host": ["{{base_url}}"],
+                  "path": ["admin", "shipping-options"],
+                  "query": [
+                    { "key": "fields", "value": "*type,*rules" }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Fulfillment",
+          "item": [
+            {
+              "name": "Create Fulfillment for Order",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.order && json.order.fulfillments && json.order.fulfillments.length > 0) {",
+                      "    const f = json.order.fulfillments[json.order.fulfillments.length - 1];",
+                      "    pm.collectionVariables.set('fulfillment_id', f.id);",
+                      "    console.log('Fulfillment ID saved:', f.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"location_id\": \"{{stock_location_id}}\"\n}"
+                },
+                "url": "{{base_url}}/admin/orders/{{order_id}}/fulfillments"
+              }
+            },
+            {
+              "name": "Cancel Fulfillment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                ],
+                "url": "{{base_url}}/admin/orders/{{order_id}}/fulfillments/{{fulfillment_id}}/cancel"
+              }
+            },
+            {
+              "name": "Get Order (inspect fulfillments)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/orders/{{order_id}}?fields=*fulfillments,*shipping_methods",
+                  "host": ["{{base_url}}"],
+                  "path": ["admin", "orders", "{{order_id}}"],
+                  "query": [
+                    { "key": "fields", "value": "*fulfillments,*shipping_methods" }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Store",
+      "item": [
+        {
+          "name": "Checkout Flow",
+          "item": [
+            {
+              "name": "1. Create Cart",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.cart) {",
+                      "    pm.collectionVariables.set('cart_id', json.cart.id);",
+                      "    console.log('Cart ID saved:', json.cart.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "x-publishable-api-key", "value": "{{publishable_api_key}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"region_id\": \"{{region_id}}\",\n  \"sales_channel_id\": \"{{sales_channel_id}}\"\n}"
+                },
+                "url": "{{base_url}}/store/carts"
+              }
+            },
+            {
+              "name": "2. Add Line Item to Cart",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "x-publishable-api-key", "value": "{{publishable_api_key}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"variant_id\": \"{{product_variant_id}}\",\n  \"quantity\": 1\n}"
+                },
+                "url": "{{base_url}}/store/carts/{{cart_id}}/line-items"
+              }
+            },
+            {
+              "name": "3. Set Shipping Address",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "x-publishable-api-key", "value": "{{publishable_api_key}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shipping_address\": {\n    \"first_name\": \"Test\",\n    \"last_name\": \"Customer\",\n    \"address_1\": \"Mannerheimintie 1\",\n    \"city\": \"Helsinki\",\n    \"postal_code\": \"00100\",\n    \"country_code\": \"fi\",\n    \"phone\": \"+358401234567\"\n  },\n  \"email\": \"test@example.com\"\n}"
+                },
+                "url": "{{base_url}}/store/carts/{{cart_id}}"
+              }
+            },
+            {
+              "name": "4. Fetch nShift Delivery Options",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "",
+                      "if (json.session_id) {",
+                      "    pm.collectionVariables.set('nshift_session_id', json.session_id);",
+                      "    console.log('nShift session ID saved:', json.session_id);",
+                      "}",
+                      "",
+                      "if (json.options && json.options.length > 0) {",
+                      "    // Save first valid option",
+                      "    const validOption = json.options.find(o => o.valid !== false);",
+                      "    if (validOption) {",
+                      "        pm.collectionVariables.set('nshift_option_id', validOption.optionId);",
+                      "        console.log('nShift option ID saved:', validOption.optionId);",
+                      "        console.log('Option name:', validOption.name);",
+                      "        console.log('Price:', validOption.price, validOption.priceDescription);",
+                      "",
+                      "        // Save first pickup point if available",
+                      "        if (validOption.pickupPoints && validOption.pickupPoints.length > 0) {",
+                      "            const pp = validOption.pickupPoints[0];",
+                      "            pm.collectionVariables.set('nshift_pickup_point_id', pp.pickupPointId);",
+                      "            console.log('Pickup point saved:', pp.name, '-', pp.address1, pp.city);",
+                      "        }",
+                      "",
+                      "        // Log delivery time if available",
+                      "        if (validOption.deliveryTime) {",
+                      "            console.log('Delivery time:', JSON.stringify(validOption.deliveryTime));",
+                      "        }",
+                      "    }",
+                      "",
+                      "    // Summary of all options",
+                      "    console.log('---');",
+                      "    console.log('Total options returned:', json.options.length);",
+                      "    json.options.forEach((opt, i) => {",
+                      "        const ppCount = opt.pickupPoints ? opt.pickupPoints.length : 0;",
+                      "        console.log(`  [${i}] ${opt.name} | price: ${opt.price} | pickup points: ${ppCount} | valid: ${opt.valid}`);",
+                      "    });",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "x-publishable-api-key", "value": "{{publishable_api_key}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cart_id\": \"{{cart_id}}\"\n}"
+                },
+                "url": "{{base_url}}/store/nshift/delivery-options"
+              }
+            },
+            {
+              "name": "5. List Shipping Options for Cart",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.shipping_options && json.shipping_options.length > 0) {",
+                      "    // Find the nShift shipping option",
+                      "    const nshiftOpt = json.shipping_options.find(o => o.provider_id === 'fp_nshift') || json.shipping_options[0];",
+                      "    pm.collectionVariables.set('shipping_option_id', nshiftOpt.id);",
+                      "    console.log('Shipping option ID saved:', nshiftOpt.id, '- provider:', nshiftOpt.provider_id);",
+                      "    console.log('All options:', json.shipping_options.map(o => `${o.id} (${o.provider_id})`).join(', '));",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "x-publishable-api-key", "value": "{{publishable_api_key}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/store/shipping-options?cart_id={{cart_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["store", "shipping-options"],
+                  "query": [
+                    { "key": "cart_id", "value": "{{cart_id}}" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "6. Add Shipping Method (with nShift data)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "x-publishable-api-key", "value": "{{publishable_api_key}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"option_id\": \"{{shipping_option_id}}\",\n  \"data\": {\n    \"session_id\": \"{{nshift_session_id}}\",\n    \"option_id\": \"{{nshift_option_id}}\",\n    \"pickup_point_id\": \"{{nshift_pickup_point_id}}\"\n  }\n}"
+                },
+                "url": "{{base_url}}/store/carts/{{cart_id}}/shipping-methods"
+              }
+            },
+            {
+              "name": "6b. Add Shipping Method (no pickup point)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "x-publishable-api-key", "value": "{{publishable_api_key}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"option_id\": \"{{shipping_option_id}}\",\n  \"data\": {\n    \"session_id\": \"{{nshift_session_id}}\",\n    \"option_id\": \"{{nshift_option_id}}\"\n  }\n}"
+                },
+                "url": "{{base_url}}/store/carts/{{cart_id}}/shipping-methods"
+              }
+            },
+            {
+              "name": "7a. Create Payment Collection",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.payment_collection && json.payment_collection.id) {",
+                      "    pm.collectionVariables.set('payment_collection_id', json.payment_collection.id);",
+                      "    console.log('Payment collection ID saved:', json.payment_collection.id);",
+                      "} else {",
+                      "    console.warn('Failed to create payment collection.');",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "x-publishable-api-key", "value": "{{publishable_api_key}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cart_id\": \"{{cart_id}}\"\n}"
+                },
+                "url": "{{base_url}}/store/payment-collections"
+              }
+            },
+            {
+              "name": "7b. Initialize Payment Session",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "x-publishable-api-key", "value": "{{publishable_api_key}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"provider_id\": \"pp_system_default\"\n}"
+                },
+                "url": "{{base_url}}/store/payment-collections/{{payment_collection_id}}/payment-sessions"
+              }
+            },
+            {
+              "name": "8. Complete Cart → Order",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.type === 'order' && json.id) {",
+                      "    pm.collectionVariables.set('order_id', json.id);",
+                      "    console.log('Order ID saved:', json.id);",
+                      "} else if (json.order && json.order.id) {",
+                      "    pm.collectionVariables.set('order_id', json.order.id);",
+                      "    console.log('Order ID saved:', json.order.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "x-publishable-api-key", "value": "{{publishable_api_key}}" }
+                ],
+                "url": "{{base_url}}/store/carts/{{cart_id}}/complete"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Utilities",
+          "item": [
+            {
+              "name": "Get Cart",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "x-publishable-api-key", "value": "{{publishable_api_key}}" }
+                ],
+                "url": "{{base_url}}/store/carts/{{cart_id}}"
+              }
+            },
+            {
+              "name": "Fetch nShift Options (custom address)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Override cart_id before sending if needed:",
+                      "// pm.collectionVariables.set('cart_id', 'cart_xxx');"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.session_id) {",
+                      "    pm.collectionVariables.set('nshift_session_id', json.session_id);",
+                      "}",
+                      "if (json.options) {",
+                      "    json.options.forEach((opt, i) => {",
+                      "        const ppCount = opt.pickupPoints ? opt.pickupPoints.length : 0;",
+                      "        const dt = opt.deliveryTime ? `${opt.deliveryTime.earliestDays}-${opt.deliveryTime.latestDays} days` : 'N/A';",
+                      "        console.log(`[${i}] ${opt.name} | ${opt.price} | ${ppCount} pickup pts | delivery: ${dt}`);",
+                      "    });",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "x-publishable-api-key", "value": "{{publishable_api_key}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cart_id\": \"{{cart_id}}\"\n}"
+                },
+                "url": "{{base_url}}/store/nshift/delivery-options"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -314,6 +314,8 @@ class NShiftProviderService extends AbstractFulfillmentProviderService {
       option_id: (optionData as any).option_id,
       carrier_id: (optionData as any).carrier_id,
       carrier_product_id: (optionData as any).carrier_product_id,
+      pickup_point_id: (data as any).pickup_point_id || undefined,
+      time_slot_id: (data as any).time_slot_id || undefined,
     }
   }
 
@@ -330,9 +332,13 @@ class NShiftProviderService extends AbstractFulfillmentProviderService {
     const {
       session_id,
       option_id,
+      pickup_point_id,
+      time_slot_id,
     } = data as {
       session_id: string
       option_id: string
+      pickup_point_id?: string
+      time_slot_id?: string
     }
 
     if (!session_id || !option_id) {
@@ -367,6 +373,8 @@ class NShiftProviderService extends AbstractFulfillmentProviderService {
         orderId,
         sessionId: session_id,
         optionId: option_id,
+        pickupPointId: pickup_point_id,
+        timeSlotId: time_slot_id,
         receiver,
         packages: [
           {
