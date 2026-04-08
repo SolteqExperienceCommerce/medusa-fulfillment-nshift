@@ -1,4 +1,4 @@
-# @solteq/@solteq/medusa-nshift-plugin
+# @solteq/medusa-nshift-plugin
 
 nShift Checkout fulfillment provider plugin for [Medusa V2](https://medusajs.com).
 
