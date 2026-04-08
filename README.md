@@ -48,7 +48,9 @@ yarn yalc publish
 # go to main project:
 cd /path/to/your-medusa-project
 
-# it'll build and publish the plugin locally, then in the main project run (assuming plugin already installed and working): 
+# it'll build and publish the plugin locally, 
+# then in the main project,
+# run (assuming plugin already installed and working): 
 yarn yalc update
 
 # to pull the fresh package from local repo
