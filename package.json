@@ -1,6 +1,6 @@
 {
   "name": "@solteq-excom/medusa-fulfillment-nshift",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "nShift Checkout fulfillment provider plugin for Medusa V2",
   "keywords": [
     "medusa",
