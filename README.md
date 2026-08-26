@@ -12,14 +12,18 @@ Integrates [nShift Checkout API](https://developers.nshiftone.com/checkout/getti
 - **Cancellation support** — deletes partial shipments in nShift when fulfillments are cancelled
 - **OAuth2 token management** — automatically manages nShift API authentication with token caching
 
-## Installation
+## Installation in project
 
 ```bash
 # yarn (if published to npm):
-yarn add @solteq/medusa-nshift-plugin
+yarn add @solteq-excom/medusa-fulfillment-nshift
+```
 
+
+## Plugin Development setup
+```bash
 # local development with yalc:
-cd /path/to/medusa-nshift-plugin
+cd /path/to/medusa-fulfillment-nshift
 
 # if yalc is not installed:
 yarn add --dev yalc
@@ -60,7 +64,7 @@ module.exports = defineConfig({
   // ...
   plugins: [
     {
-      resolve: "@solteq/medusa-nshift-plugin",
+      resolve: "@solteq-excom/medusa-fulfillment-nshift",
       options: {},
     },
   ],
