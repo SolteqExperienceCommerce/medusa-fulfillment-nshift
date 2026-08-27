@@ -42,7 +42,8 @@
     "develop": "medusa plugin:develop",
     "prepack": "node scripts/prepack-clean.js",
     "publish:local": "medusa plugin:publish",
-    "test:unit": "cross-env TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit"
+    "test:unit": "cross-env TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@medusajs/admin-sdk": "^2.13.3",
