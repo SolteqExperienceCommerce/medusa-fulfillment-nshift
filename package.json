@@ -6,6 +6,8 @@
     "medusa",
     "medusa-v2",
     "medusa-plugin",
+    "medusa-plugin-integration",
+    "medusa-plugin-shipping",
     "medusa-fulfillment",
     "nshift",
     "shipping",
