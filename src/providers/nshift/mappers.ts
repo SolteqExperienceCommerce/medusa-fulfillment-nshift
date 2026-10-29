@@ -1,5 +1,6 @@
 import {
   NShiftArticle,
+  NShiftCalculatedPriceData,
   NShiftDeliveryOption,
   NShiftDimensionUnit,
   NShiftDimensions,
@@ -9,6 +10,7 @@ import {
   NShiftPackage,
   NShiftReceiver,
   NShiftSelectedAddon,
+  NShiftSubShipment,
   NShiftWeightUnit,
 } from "./types"
 
@@ -164,7 +166,7 @@ export const describeMissingReceiverFields = (receiver: NShiftReceiver): string[
 
 // ── Packages ──
 
-type PackageTotals = {
+export type PackageTotals = {
   packages: NShiftPackage[]
   totalWeightKg?: number
   totalVolumeCm3?: number
@@ -262,6 +264,26 @@ export const buildPackages = (
   })
 }
 
+/**
+ * Builds one nShift sub-shipment from the packages and totals of the items it
+ * covers. `extra` carries the sub-shipment id (mandatory once the split session
+ * exists) and presentation fields such as `title`.
+ */
+export const buildSubShipment = (
+  totals: PackageTotals,
+  extra: Omit<
+    NShiftSubShipment,
+    "packages" | "totalWeightKg" | "totalVolumeCm3" | "totalPrice"
+  > = {}
+): NShiftSubShipment =>
+  compact<NShiftSubShipment>({
+    ...extra,
+    packages: totals.packages.length ? totals.packages : undefined,
+    totalWeightKg: totals.totalWeightKg,
+    totalVolumeCm3: totals.totalVolumeCm3,
+    totalPrice: totals.totalPrice,
+  })
+
 // ── Delivery option → Medusa fulfillment option ──
 
 export const toFulfillmentOptionData = (
@@ -281,11 +303,54 @@ export const toFulfillmentOptionData = (
     carrier_product_name: toTrimmedString(option.carrierProductName),
   })
 
+// ── Delivery option → storefront price data ──
+
+/** The session (and sub-shipment) a delivery option was fetched in. */
+export type PricedSession = {
+  sessionId: string
+  subShipmentId?: string
+}
+
+/**
+ * Builds the `calculated_price.nshift` block a storefront renders the option from.
+ * Only fields nShift returns to its own browser widget are exposed; nested nShift
+ * objects are passed through unchanged.
+ */
+export const toCalculatedPriceData = (
+  session: PricedSession,
+  option: NShiftDeliveryOption,
+  prices: { basePrice: number; addonsPrice: number; currencyCode: string }
+): NShiftCalculatedPriceData =>
+  compact<NShiftCalculatedPriceData>({
+    session_id: session.sessionId,
+    sub_shipment_id: session.subShipmentId,
+    option_id: option.optionId,
+    name: toFulfillmentOptionData(option).name,
+    carrier_name: toTrimmedString(option.carrierName),
+    carrier_product_name: toTrimmedString(option.carrierProductName),
+    price: prices.basePrice,
+    addons_price: prices.addonsPrice,
+    currency_code: prices.currencyCode,
+    delivery_time: option.deliveryTime,
+    pickup_points: option.pickupPoints ?? [],
+    no_default_pickup_point: option.noDefaultPickupPoint === true,
+    time_slots: option.timeSlots ?? [],
+    pickup_time_slots: option.pickupTimeSlots ?? [],
+    addons: option.addons ?? [],
+    fields: option.fields ?? [],
+    texts: option.texts ?? [],
+    logo_url: toTrimmedString(option.logoUrl),
+    badges: option.badges ?? [],
+    certifications: option.certifications ?? [],
+  })
+
 // ── Storefront-supplied method data ──
 
 export type NormalizedMethodData = {
   session_id?: string
+  sub_shipment_id?: string
   option_id?: string
+  preselected_store_id?: string
   pickup_point_id?: string
   time_slot_id?: string
   addons: NShiftSelectedAddon[]
@@ -358,7 +423,13 @@ export const normalizeMethodData = (
   return {
     session_id:
       toTrimmedString(input.session_id) ?? toTrimmedString(input.sessionId),
+    sub_shipment_id:
+      toTrimmedString(input.sub_shipment_id) ??
+      toTrimmedString(input.subShipmentId),
     option_id: toTrimmedString(input.option_id) ?? toTrimmedString(input.optionId),
+    preselected_store_id:
+      toTrimmedString(input.preselected_store_id) ??
+      toTrimmedString(input.preselectedStoreId),
     pickup_point_id:
       toTrimmedString(input.pickup_point_id) ??
       toTrimmedString(input.pickupPointId),

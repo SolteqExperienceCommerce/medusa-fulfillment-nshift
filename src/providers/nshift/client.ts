@@ -3,13 +3,23 @@ import {
   CreatePartialShipmentRequest,
   CreateSessionRequest,
   CreateSessionResponse,
+  CreateSplitPartialShipmentsRequest,
+  CreateSplitPartialShipmentsResponse,
+  CreateSplitSessionRequest,
+  CreateSplitSessionResponse,
   FetchDeliveryOptionsRequest,
   FetchDeliveryOptionsResponse,
+  FetchSplitDeliveryOptionsRequest,
+  FetchSplitDeliveryOptionsResponse,
   NShiftIssue,
   NShiftOptions,
   NShiftProblemResponse,
   NShiftTokenResponse,
   PartialShipmentResponse,
+  UpdateSessionRequest,
+  UpdateSessionResponse,
+  UpdateSplitSessionRequest,
+  UpdateSplitSessionResponse,
 } from "./types"
 
 const DEFAULT_AUTH_URL = "https://account.nshiftportal.com/idp/connect/token"
@@ -222,6 +232,21 @@ export class NShiftClient {
     )
   }
 
+  /**
+   * Updates an existing session, e.g. to change the receiver, set a preselected
+   * store or flip `includeInConversionRate` when a browsing session becomes a real
+   * checkout.
+   */
+  async updateSession(
+    sessionId: string,
+    data: UpdateSessionRequest
+  ): Promise<UpdateSessionResponse> {
+    return this.sendRequest<UpdateSessionResponse>(
+      `/options/v1/sessions/${encodeURIComponent(sessionId)}`,
+      { method: "PUT", body: JSON.stringify(data) }
+    )
+  }
+
   // ── Delivery Options ──
 
   /** Fetches the delivery options available within a session. */
@@ -235,20 +260,81 @@ export class NShiftClient {
     )
   }
 
+  // ── Split Shipment ──
+
+  /**
+   * Creates a split session for the configured connection. The response lists one
+   * `subShipmentId` per requested sub-shipment, in request order; the first one
+   * equals the session id.
+   */
+  async createSplitSession(
+    data: CreateSplitSessionRequest
+  ): Promise<CreateSplitSessionResponse> {
+    return this.sendRequest<CreateSplitSessionResponse>(
+      `/options/v1/split-shipments/sessions/${encodeURIComponent(
+        this.options.connection_id
+      )}`,
+      { method: "POST", body: JSON.stringify(data) }
+    )
+  }
+
+  /**
+   * Replaces the sub-shipments of a split session, for when the cart changes how
+   * many shipments it needs. Entries keep their identity only if they carry their
+   * existing `subShipmentId`.
+   */
+  async updateSplitSession(
+    sessionId: string,
+    data: UpdateSplitSessionRequest
+  ): Promise<UpdateSplitSessionResponse> {
+    return this.sendRequest<UpdateSplitSessionResponse>(
+      `/options/v1/split-shipments/sessions/${encodeURIComponent(sessionId)}`,
+      { method: "PUT", body: JSON.stringify(data) }
+    )
+  }
+
+  /** Fetches delivery options per sub-shipment of a split session. */
+  async fetchSplitDeliveryOptions(
+    sessionId: string,
+    data: FetchSplitDeliveryOptionsRequest
+  ): Promise<FetchSplitDeliveryOptionsResponse> {
+    return this.sendRequest<FetchSplitDeliveryOptionsResponse>(
+      `/options/v1/split-shipments/shipping-options/${encodeURIComponent(sessionId)}`,
+      { method: "POST", body: JSON.stringify(data) }
+    )
+  }
+
   // ── Partial Shipments ──
+
+  private shipmentQuery(sendToBookAndPrint?: boolean): string {
+    const params = new URLSearchParams({ "extended-result": "true" })
+    if (sendToBookAndPrint) {
+      params.set("send-to-book-and-print", "true")
+    }
+    return params.toString()
+  }
 
   /** Creates a partial shipment in nShift after the order is placed. */
   async createPartialShipment(
     data: CreatePartialShipmentRequest,
     sendToBookAndPrint?: boolean
   ): Promise<PartialShipmentResponse> {
-    const params = new URLSearchParams({ "extended-result": "true" })
-    if (sendToBookAndPrint) {
-      params.set("send-to-book-and-print", "true")
-    }
-
     return this.sendRequest<PartialShipmentResponse>(
-      `/shipments/v1/shipments?${params.toString()}`,
+      `/shipments/v1/shipments?${this.shipmentQuery(sendToBookAndPrint)}`,
+      { method: "POST", body: JSON.stringify(data) }
+    )
+  }
+
+  /**
+   * Creates one partial shipment per selected sub-shipment of a split session.
+   * The resulting shipments are ordinary partial shipments, addressable by id.
+   */
+  async createSplitPartialShipments(
+    data: CreateSplitPartialShipmentsRequest,
+    sendToBookAndPrint?: boolean
+  ): Promise<CreateSplitPartialShipmentsResponse> {
+    return this.sendRequest<CreateSplitPartialShipmentsResponse>(
+      `/shipments/v1/split-shipments/shipments?${this.shipmentQuery(sendToBookAndPrint)}`,
       { method: "POST", body: JSON.stringify(data) }
     )
   }
