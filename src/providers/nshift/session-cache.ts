@@ -43,6 +43,28 @@ export class TtlCache<T> {
     return pending
   }
 
+  /**
+   * Stores an already-known value under `key` unless a live entry exists, so a later
+   * `resolve` for an equivalent lookup in this process, within the TTL, is served
+   * without calling nShift again.
+   */
+  prime(key: string, value: T): void {
+    const now = Date.now()
+    const cached = this.entries.get(key)
+
+    if (cached && cached.expiresAt > now) {
+      return
+    }
+
+    this.entries.set(key, { value: Promise.resolve(value), expiresAt: now + this.ttlMs })
+    this.prune(now)
+  }
+
+  /** Drops the entry for `key`, so the next `resolve` runs its factory. */
+  delete(key: string): void {
+    this.entries.delete(key)
+  }
+
   private prune(now: number): void {
     for (const [key, entry] of this.entries) {
       if (entry.expiresAt <= now) {
@@ -58,5 +80,46 @@ export class TtlCache<T> {
       }
       this.entries.delete(oldest.value)
     }
+  }
+}
+
+/**
+ * A `Map` that keeps at most `maxEntries` keys, evicting the least recently set
+ * one first. Used for per-process bookkeeping that must not grow without bound.
+ */
+export class BoundedMap<V> {
+  private readonly entries = new Map<string, V>()
+
+  constructor(readonly maxEntries: number) {}
+
+  get(key: string): V | undefined {
+    return this.entries.get(key)
+  }
+
+  has(key: string): boolean {
+    return this.entries.has(key)
+  }
+
+  get size(): number {
+    return this.entries.size
+  }
+
+  /** Sets `key` and marks it the most recently used. */
+  set(key: string, value: V): void {
+    // Re-inserting keeps the Map ordered by recency for the eviction below.
+    this.entries.delete(key)
+    this.entries.set(key, value)
+
+    while (this.entries.size > this.maxEntries) {
+      const oldest = this.entries.keys().next()
+      if (oldest.done) {
+        break
+      }
+      this.entries.delete(oldest.value)
+    }
+  }
+
+  delete(key: string): void {
+    this.entries.delete(key)
   }
 }

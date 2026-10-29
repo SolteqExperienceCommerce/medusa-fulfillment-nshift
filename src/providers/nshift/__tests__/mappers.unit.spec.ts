@@ -1,14 +1,16 @@
 import {
   buildPackages,
   buildReceiver,
+  buildSubShipment,
   describeMissingReceiverFields,
   isReceiverDeliverable,
   normalizeMethodData,
   sumAddonPrices,
+  toCalculatedPriceData,
   toFulfillmentOptionData,
   toNumber,
 } from "../mappers"
-import { NShiftDeliveryOption } from "../types"
+import { NShiftDeliveryOption, NShiftPickupPoint, NShiftTimeSlot } from "../types"
 
 describe("buildReceiver", () => {
   it("omits blank fields instead of sending empty strings", () => {
@@ -198,6 +200,18 @@ describe("normalizeMethodData", () => {
     })
   })
 
+  it("accepts sub-shipment and preselected store ids in both spellings", () => {
+    expect(
+      normalizeMethodData({ sub_shipment_id: "sub-1", preselected_store_id: "store-1" })
+    ).toMatchObject({ sub_shipment_id: "sub-1", preselected_store_id: "store-1" })
+    expect(
+      normalizeMethodData({ subShipmentId: "sub-2", preselectedStoreId: "store-2" })
+    ).toMatchObject({ sub_shipment_id: "sub-2", preselected_store_id: "store-2" })
+    expect(
+      normalizeMethodData({ sub_shipment_id: " ", subShipmentId: "sub-3" })
+    ).toMatchObject({ sub_shipment_id: "sub-3" })
+  })
+
   it("tolerates missing data", () => {
     expect(normalizeMethodData(undefined)).toEqual({
       session_id: undefined,
@@ -265,5 +279,162 @@ describe("toFulfillmentOptionData", () => {
         title: "DHL Paket International",
       }).name
     ).toBe("DHL Paket International")
+  })
+})
+
+describe("buildSubShipment", () => {
+  it("carries packages, totals and the extra fields", () => {
+    const totals = buildPackages(
+      [{ quantity: 2, unit_price: 5, variant_sku: "A", variant: { weight: 1 } }],
+      {}
+    )
+
+    expect(
+      buildSubShipment(totals, { subShipmentId: "sub-1", preselectedStoreId: "store-1" })
+    ).toEqual({
+      subShipmentId: "sub-1",
+      preselectedStoreId: "store-1",
+      packages: totals.packages,
+      totalWeightKg: 2,
+      totalPrice: 10,
+    })
+  })
+
+  it("omits empty packages and undefined extras", () => {
+    expect(
+      buildSubShipment({ packages: [] }, { preselectedStoreId: undefined })
+    ).toEqual({})
+  })
+})
+
+describe("toCalculatedPriceData (the storefront-facing nshift block)", () => {
+  const prices = { basePrice: 5.9, addonsPrice: 0.5, currencyCode: "EUR" }
+
+  /** Exactly what nShift's widget receives for a pickup point, tokens included. */
+  const pickupPoint: NShiftPickupPoint = {
+    pickupPointId: "K384",
+    name: "K-Market Kamppi",
+    address1: "Urho Kekkosen katu 1",
+    city: "Helsinki",
+    postalCode: "00100",
+    countryCode: "FI",
+    type: "SERVICE_POINT",
+    distance: 450,
+    allocateToken: "alloc-token",
+    pickupLockerToken: "locker-token",
+    externalPickupLockerToken: "ext-locker-token",
+    openHoursWeekday: [{ firstWeekday: "MONDAY", lastWeekday: "FRIDAY", closed: false }],
+  }
+  const timeSlot: NShiftTimeSlot = {
+    timeSlotId: "slot-1",
+    earliest: "2026-11-02T08:00:00Z",
+    latest: "2026-11-02T12:00:00Z",
+    timeSlotToken: "slot-token",
+    externalTimeSlotToken: "ext-slot-token",
+  }
+  const fullOption: NShiftDeliveryOption = {
+    valid: true,
+    optionId: "posti",
+    name: "Posti pickup point",
+    carrierId: "948",
+    carrierName: "Posti",
+    carrierProductName: "Postipaketti",
+    price: 5.9,
+    deliveryTime: { earliestDays: 1, latestDays: 2 },
+    pickupPoints: [pickupPoint],
+    noDefaultPickupPoint: true,
+    timeSlots: [timeSlot],
+    pickupTimeSlots: [{ pickupTimeSlotId: "pts-1" }],
+    addons: [{ addonId: "sms", price: 0.5 }],
+    fields: [{ fieldId: "DOORCODE" }],
+    texts: ["Pick it up"],
+    logoUrl: "https://cdn.example.com/posti.png",
+    badges: [{ badgeId: "eco" }],
+    certifications: [{ certificationId: "c1" }],
+  }
+
+  it("exposes exactly this set of top-level keys", () => {
+    const block = toCalculatedPriceData(
+      { sessionId: "s-1", subShipmentId: "s-1" },
+      fullOption,
+      prices
+    )
+
+    // Adding a key here makes it public to anonymous storefront callers: review it.
+    expect(Object.keys(block).sort()).toEqual(
+      [
+        "addons",
+        "addons_price",
+        "badges",
+        "carrier_name",
+        "carrier_product_name",
+        "certifications",
+        "currency_code",
+        "delivery_time",
+        "fields",
+        "logo_url",
+        "name",
+        "no_default_pickup_point",
+        "option_id",
+        "pickup_points",
+        "pickup_time_slots",
+        "price",
+        "session_id",
+        "sub_shipment_id",
+        "texts",
+        "time_slots",
+      ].sort()
+    )
+  })
+
+  it("drops the optional keys a minimal option does not have", () => {
+    const block = toCalculatedPriceData(
+      { sessionId: "s-1" },
+      { valid: true, optionId: "bare", name: "Bare", price: 1 },
+      prices
+    )
+
+    expect(Object.keys(block).sort()).toEqual(
+      [
+        "addons",
+        "addons_price",
+        "badges",
+        "certifications",
+        "currency_code",
+        "fields",
+        "name",
+        "no_default_pickup_point",
+        "option_id",
+        "pickup_points",
+        "pickup_time_slots",
+        "price",
+        "session_id",
+        "texts",
+        "time_slots",
+      ].sort()
+    )
+  })
+
+  it("passes pickup points and time slots through with nShift's own widget keys", () => {
+    const block = toCalculatedPriceData({ sessionId: "s-1" }, fullOption, prices)
+
+    expect(Object.keys(block.pickup_points[0]).sort()).toEqual(
+      [
+        "address1",
+        "allocateToken",
+        "city",
+        "countryCode",
+        "distance",
+        "externalPickupLockerToken",
+        "name",
+        "openHoursWeekday",
+        "pickupLockerToken",
+        "pickupPointId",
+        "postalCode",
+        "type",
+      ].sort()
+    )
+    expect(block.pickup_points[0]).toEqual(pickupPoint)
+    expect(block.time_slots[0]).toEqual(timeSlot)
   })
 })
