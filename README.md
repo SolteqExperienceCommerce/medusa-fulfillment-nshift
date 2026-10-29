@@ -70,6 +70,8 @@ export default defineConfig({
               default_postal_code: process.env.NSHIFT_DEFAULT_POSTAL_CODE,
               send_to_book_and_print:
                 process.env.NSHIFT_SEND_TO_BOOK_AND_PRINT === "true",
+              // Split orders: one nShift sub-shipment per shipping profile
+              split_shipments: process.env.NSHIFT_SPLIT_SHIPMENTS === "true",
             },
           },
         ],
@@ -90,7 +92,12 @@ NSHIFT_LOCALE_ID=en-GB
 NSHIFT_DEFAULT_COUNTRY=FI
 NSHIFT_DEFAULT_POSTAL_CODE=00100
 NSHIFT_SEND_TO_BOOK_AND_PRINT=false
+# Split orders (split shipments). Set to true to use nShift's split-shipment
+# endpoints; leave false for one regular session per shipping profile.
+NSHIFT_SPLIT_SHIPMENTS=false
 ```
+
+`NSHIFT_SPLIT_SHIPMENTS` only takes effect if `medusa-config.ts` maps it to `split_shipments` as shown above. Split orders need no other variables or nShift portal setting: nShift enables split shipment purely by which endpoints are called. They do need one Medusa shipping profile per part of the order, and Medusa 2.16+ so the storefront can add one shipping method per profile.
 
 > If your client secret contains `$`, do not escape it as `\$` in `.env` — dotenv keeps the backslash and nShift answers `invalid_client`. Wrap the value in quotes instead.
 
