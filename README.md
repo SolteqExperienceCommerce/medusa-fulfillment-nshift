@@ -402,6 +402,18 @@ Errors are raised where they are actionable instead:
 - Storefront-pinned sessions (`session_id`, `sub_shipment_id`, `preselected_store_id`), updated when the cart changes.
 - Fulfillments recover from expired or missing nShift sessions and record price drift.
 
+Config changes (only needed for split orders; everything else is unchanged):
+
+```env
+# .env
+NSHIFT_SPLIT_SHIPMENTS=false
+```
+
+```ts
+// medusa-config.ts → nShift provider options
+split_shipments: process.env.NSHIFT_SPLIT_SHIPMENTS === "true",
+```
+
 ### 0.1.6
 - Package keywords updated.
 
