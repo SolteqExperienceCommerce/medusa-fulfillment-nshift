@@ -394,6 +394,23 @@ Errors are raised where they are actionable instead:
 - Own Pickup Locations API management.
 - Klarna badges and delivery types are read from nShift but not surfaced. Badges and certifications are returned in `calculated_price.nshift` but not stored on the shipping method.
 
+## Changelog
+
+### 0.1.7
+- Pickup points, time slots and pickup time slots exposed to storefronts via `shipping_option.calculated_price.nshift` on Medusa's built-in store routes.
+- Opt-in split shipments (`split_shipments` / `NSHIFT_SPLIT_SHIPMENTS`): one nShift sub-shipment per Medusa shipping profile.
+- Storefront-pinned sessions (`session_id`, `sub_shipment_id`, `preselected_store_id`), updated when the cart changes.
+- Fulfillments recover from expired or missing nShift sessions and record price drift.
+
+### 0.1.6
+- Package keywords updated.
+
+### 0.1.5
+- Fixed delivery option fetching and pricing.
+
+### 0.1.4
+- Fixed package exports.
+
 ## License
 
 MIT
